@@ -3,12 +3,14 @@
 
 export type RunStatus = 'ok' | 'retry' | 'fail';
 
-// One row per job in runs/<night>.jsonl. `runs` counts its lines, `retries` its `retry` lines.
+// One row per job in runs/<night>.jsonl. `runs` counts its lines, `retries` and `fails` its `retry`
+// and `fail` lines.
 export type DigestRow = {
   job: string;
   owner: string | null;
   runs: number;
   retries: number;
+  fails: number;
   lastStatus: RunStatus;
   // The latest error the job logged, even if a later run was ok.
   lastError: string | null;

@@ -38,11 +38,17 @@ describe('readNight', () => {
       owner: 'rook',
       runs: 4,
       retries: 3,
+      fails: 0,
       lastStatus: 'ok',
       lastError: 'upstream 503',
       firstAt: '2026-10-29T01:30:00+01:00',
       lastAt: '2026-10-29T01:37:00+01:00',
     });
+  });
+
+  it('counts fail lines', () => {
+    const row = readNight('runs', '2026-10-28')?.rows.find((r) => r.job === 'notes/backup');
+    expect(row).toMatchObject({ runs: 1, fails: 1, lastStatus: 'fail' });
   });
 
   it('returns null for a night with no file', () => {
