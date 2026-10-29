@@ -12,6 +12,13 @@ export function createApp(config: RigConfig = loadConfig()) {
 
   app.get('/health', (c) => c.json({ ok: true, lane: lane().id }));
 
+  // The page and this JSON read the same Digest, rows in readNight's order: they never disagree.
+  app.get('/api/digest/:night', (c) => {
+    const night = c.req.param('night');
+    const digest = readNight(config.runsDir, night);
+    return digest === null ? c.json({ error: 'no such night', night }, 404) : c.json(digest);
+  });
+
   app.get('/', (c) =>
     c.html(
       <Layout title="status" lane={lane()}>
