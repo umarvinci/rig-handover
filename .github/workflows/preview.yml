@@ -1,0 +1,53 @@
+name: preview
+
+# Plan morning-digest § 3 and § 4 (ADR 0003). Saves one digest page as one HTML file and puts it
+# on GitHub Pages. The page is never committed: the marker comes from the LANE_MARKER secret, and
+# a run with marker off uploads over the same link with "no marker set".
+on:
+  workflow_dispatch:
+    inputs:
+      night:
+        description: Night to preview (YYYY-MM-DD)
+        required: true
+        default: '2026-10-28'
+      marker:
+        description: Show the lane marker (off for the clean-up)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}digest-${{ inputs.night }}.html
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: corepack pnpm@12.16.1 install --frozen-lockfile
+      - name: Save the page
+        env:
+          LANE_MARKER: ${{ inputs.marker && secrets.LANE_MARKER || '' }}
+          NIGHT: ${{ inputs.night }}
+        run: |
+          corepack pnpm@12.16.1 start &
+          mkdir _site
+          curl -sf --retry 20 --retry-connrefused --retry-delay 1 -o "_site/digest-$NIGHT.html" "http://localhost:8787/digest/$NIGHT"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
