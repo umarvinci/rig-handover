@@ -14,12 +14,13 @@ in a shell this agent can run.
 2. Draft the split as a table: title · plan section · scope · done when · blocked by.
    One issue per unit of work.
 3. **Stop and show the table to the human.** Publish nothing until they approve it.
-4. Ask the human what every issue here must carry (fields, labels, wording), unless it is
-   already written down in this session or in the repo.
-5. Create each issue in dependency order, so blocked-by can cite real numbers:
+4. Every issue carries the shape below. Ask the human only about anything it doesn't cover.
+5. Create the plan's label if it's missing, then each issue in dependency order, so blocked-by
+   can cite real numbers:
 
    ```sh
-   gh issue create --title "<title>" --body-file <tmp.md>
+   gh label create "plan:<plan>"
+   gh issue create --title "<title>" --label "plan:<plan>" --body-file <tmp.md>
    ```
 
 6. Record every issue URL from gh's output (not from memory) and reply with the list.
@@ -29,6 +30,24 @@ Closing one, with the closing comment from AGENTS.md:
 ```sh
 gh issue close <n> -c "<closing comment>"
 ```
+
+If a pushed `closes #n` already closed it, `gh issue close` posts nothing: use
+`gh issue comment <n> --body "<closing comment>"`.
+
+## What every issue carries
+
+Agreed with the lane's owner on 2026-10-29 (plan morning-digest). The reviewer sorts by the first
+line and the label.
+
+- First line: `Source: plan.md § <n>`, with the subsection where the plan has one (`§ 2a`).
+- Label: `plan:<plan>`, the `plan:` value from the plan's frontmatter (`plan:morning-digest`).
+- `## Scope`: the boundary and the starting point, one line each. Not the edit list.
+- `## Done when`: the plan's check, word for word where it has one. If it waits on a person
+  (a reviewer), say so: the issue stays open until they have acted (AGENTS.md, rule 5).
+- `## Blocked by`: issue numbers, or `—`. Say when an issue can start before its blocker lands
+  but can't finish.
+- `## Worker`: the suggested model and why (AGENTS.md, step 3), and a reminder to close with the
+  closing comment from AGENTS.md.
 
 ## No `gh`
 
